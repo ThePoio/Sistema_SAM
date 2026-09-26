@@ -7,4 +7,3 @@ __pycache__/
 uploads/
 .vscode/
 .github/
-.env.example

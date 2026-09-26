@@ -1,6 +1,5 @@
 import asyncio
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -18,9 +17,19 @@ from .schemas import (
     EvaluationResponse,
     LoginRequest,
     LoginResponse,
+    UserCreate,
+    UserListResponse,
     UserResponse,
+    UserUpdate,
 )
-from .services import cpu_heavy_task, parse_object_id, serialize_evaluation, utc_now
+from .services import (
+    cpu_heavy_task,
+    hash_password,
+    parse_object_id,
+    serialize_evaluation,
+    serialize_user,
+    utc_now,
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "static"
@@ -51,23 +60,80 @@ def require_role(role: str, x_role: str | None, x_user_id: str | None) -> str:
 
 
 @app.post("/api/auth/login", response_model=LoginResponse)
-async def login(payload: LoginRequest) -> LoginResponse:
-    valid_users = {
-        "admin": {"password": "admin123", "role": "admin", "email": "admin@organismo.gov"},
-        "encargado": {"password": "encargado123", "role": "encargado", "email": "encargado@organismo.gov"},
-    }
-    user = valid_users.get(payload.username.lower())
-    if not user or user["password"] != payload.password or user["role"] != payload.role:
+async def login(payload: LoginRequest, request: Request) -> LoginResponse:
+    user = await get_database(request).users.find_one({"username": payload.username.lower()})
+    if not user or user["password_hash"] != hash_password(payload.password) or user["role"] != payload.role:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Credenciales o rol invalidos")
     return LoginResponse(
         message="Autenticacion simulada exitosa",
         user=UserResponse(
-            username=payload.username.lower(),
-            email=user["email"],
-            role=user["role"],
-            display_name="Administrador" if user["role"] == "admin" else "Encargado de Area",
+            username=user["username"], email=user["email"], role=user["role"], display_name=user["display_name"]
         ),
     )
+
+
+@app.post("/api/users", response_model=UserListResponse, status_code=status.HTTP_201_CREATED)
+async def create_user(
+    payload: UserCreate,
+    request: Request,
+    x_role: str | None = Header(default=None),
+    x_user_id: str | None = Header(default=None),
+) -> dict[str, Any]:
+    require_role("admin", x_role, x_user_id)
+    collection = get_database(request).users
+    if await collection.find_one({"username": payload.username.lower()}):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El usuario ya existe")
+    document = payload.model_dump()
+    document["username"] = document["username"].lower()
+    document["password_hash"] = hash_password(document.pop("password"))
+    result = await collection.insert_one(document)
+    document["_id"] = result.inserted_id
+    return serialize_user(document)
+
+
+@app.get("/api/users", response_model=list[UserListResponse])
+async def list_users(
+    request: Request,
+    x_role: str | None = Header(default=None),
+    x_user_id: str | None = Header(default=None),
+) -> list[dict[str, Any]]:
+    require_role("admin", x_role, x_user_id)
+    return [serialize_user(user) async for user in get_database(request).users.find().sort("username", 1)]
+
+
+@app.put("/api/users/{user_id}", response_model=UserListResponse)
+async def update_user(
+    user_id: str,
+    payload: UserUpdate,
+    request: Request,
+    x_role: str | None = Header(default=None),
+    x_user_id: str | None = Header(default=None),
+) -> dict[str, Any]:
+    require_role("admin", x_role, x_user_id)
+    updates = payload.model_dump(exclude_none=True)
+    if "password" in updates:
+        updates["password_hash"] = hash_password(updates.pop("password"))
+    result = await get_database(request).users.update_one({"_id": parse_object_id(user_id)}, {"$set": updates})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+    return serialize_user(await get_database(request).users.find_one({"_id": parse_object_id(user_id)}))
+
+
+@app.delete("/api/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    user_id: str,
+    request: Request,
+    x_role: str | None = Header(default=None),
+    x_user_id: str | None = Header(default=None),
+) -> None:
+    require_role("admin", x_role, x_user_id)
+    target_id = parse_object_id(user_id)
+    current_user = await get_database(request).users.find_one({"username": x_user_id})
+    if current_user and current_user["_id"] == target_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No puedes eliminar tu propio usuario")
+    result = await get_database(request).users.delete_one({"_id": target_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
 
 
 @app.post("/api/evaluations", response_model=EvaluationResponse, status_code=status.HTTP_201_CREATED)
@@ -78,8 +144,12 @@ async def create_evaluation(
     x_user_id: str | None = Header(default=None),
 ) -> dict[str, Any]:
     require_role("admin", x_role, x_user_id)
+    assigned_user = await get_database(request).users.find_one({"username": payload.assigned_to.lower(), "role": "encargado"})
+    if not assigned_user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El responsable debe ser un encargado existente")
     now = utc_now()
     document = payload.model_dump()
+    document["assigned_to"] = document["assigned_to"].lower()
     document.update({"progress": 0, "evidence": "", "status": "Pendiente", "created_at": now, "updated_at": now})
     result = await get_database(request).evaluations.insert_one(document)
     document["_id"] = result.inserted_id

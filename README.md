@@ -1,6 +1,10 @@
 # Plataforma Integral de Evaluaciones Organismos Publicos
 
-Aplicacion academica fullstack construida con FastAPI, MongoDB Atlas y Vanilla JS. Incluye dos roles simulados: Administrador y Encargado de Area.
+Aplicacion web para el proyecto SIAM con la capacidad de registrar dos tipos de usuarios (administradores y encargados) y cada uno de ellos pudiendo hacer diferentes acciones dentro de la pagina. 
+
+Los administradores tienen la capacidad de crear evaluaciones y usuarios, ademas de poder modificar y eliminar a estos mismos. Los encargados pueden revisar sus evaluaciones pendientes, cambiar su porcentaje de avance, subir evidencia y analizarla con IA para saber que tan acorde es a lo solicitado. 
+
+La aplicacion sigue siendo un proof of concept, no obstante ya logra tener una base solida para el proyecto real, la conexion con la db funciona y las tareas cpu demandantes no detienen a la pagina, pues usa funciones asincronas.
 
 ## Requisitos
 
@@ -54,6 +58,12 @@ Credenciales simuladas:
 - `GET /api/evaluations`: lista todas las evaluaciones para admin o las asignadas al encargado.
 - `PUT /api/evaluations/{id}/progress`: actualiza avance y evidencia; requiere rol encargado.
 - `POST /api/evaluations/{id}/analyze`: analiza la evidencia registrada.
+- `POST /api/users`: crea un usuario; requiere rol admin.
+- `GET /api/users`: lista usuarios; requiere rol admin.
+- `PUT /api/users/{id}`: modifica email, rol, nombre o contrasena; requiere rol admin.
+- `DELETE /api/users/{id}`: elimina un usuario; requiere rol admin.
+
+Al iniciar, la aplicacion crea los usuarios demo si no existen. Para crear una evaluacion, `assigned_to` debe coincidir con el username de un usuario con rol `encargado`; esto evita evaluaciones asignadas a cuentas inexistentes.
 
 ## Prueba de concurrencia con `asyncio.to_thread`
 
