@@ -54,6 +54,12 @@ Credenciales simuladas:
 - `GET /api/evaluations`: lista todas las evaluaciones para admin o las asignadas al encargado.
 - `PUT /api/evaluations/{id}/progress`: actualiza avance y evidencia; requiere rol encargado.
 - `POST /api/evaluations/{id}/analyze`: analiza la evidencia registrada.
+- `POST /api/users`: crea un usuario; requiere rol admin.
+- `GET /api/users`: lista usuarios; requiere rol admin.
+- `PUT /api/users/{id}`: modifica email, rol, nombre o contrasena; requiere rol admin.
+- `DELETE /api/users/{id}`: elimina un usuario; requiere rol admin.
+
+Al iniciar, la aplicacion crea los usuarios demo si no existen. Para crear una evaluacion, `assigned_to` debe coincidir con el username de un usuario con rol `encargado`; esto evita evaluaciones asignadas a cuentas inexistentes.
 
 ## Prueba de concurrencia con `asyncio.to_thread`
 

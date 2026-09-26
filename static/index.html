@@ -44,6 +44,16 @@
         </form>
         <div class="panel list-panel"><div class="section-heading"><div><p class="eyebrow">Vision global</p><h2>Avances registrados</h2></div><button id="refresh-admin" class="button ghost">Actualizar</button></div><div id="admin-list" class="evaluation-list"></div></div>
       </div>
+      <section id="user-management" class="panel list-panel hidden">
+        <div class="section-heading"><div><p class="eyebrow">Administracion</p><h2>Gestion de usuarios</h2></div><button id="refresh-users" class="button ghost">Actualizar</button></div>
+        <form id="user-form" class="user-form">
+          <input type="hidden" name="id">
+          <div class="user-fields"><label>Usuario<input name="username" required minlength="3" maxlength="80"></label><label>Correo<input name="email" type="email" required></label><label>Nombre visible<input name="display_name" required minlength="3"></label><label>Rol<select name="role"><option value="encargado">Encargado de Area</option><option value="admin">Administrador</option></select></label><label>Contraseña<input name="password" type="password" minlength="4" placeholder="Obligatoria al crear"></label></div>
+          <div class="user-actions"><button class="button primary" type="submit"><span id="user-submit-label">Crear usuario</span><span>+</span></button><button id="cancel-user-edit" class="button ghost hidden" type="button">Cancelar edicion</button></div>
+        </form>
+        <p id="user-message" class="message" role="status"></p>
+        <div id="user-list" class="user-list"></div>
+      </section>
       <div id="encargado-view" class="panel list-panel hidden"><div class="section-heading"><div><p class="eyebrow">Trabajo asignado</p><h2>Mis evaluaciones</h2></div><button id="refresh-encargado" class="button ghost">Actualizar</button></div><div id="encargado-list" class="evaluation-list"></div></div>
     </section>
   </main>

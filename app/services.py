@@ -11,6 +11,20 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+
+def serialize_user(document: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": str(document["_id"]),
+        "username": document["username"],
+        "email": document["email"],
+        "role": document["role"],
+        "display_name": document["display_name"],
+    }
+
+
 def serialize_evaluation(document: dict[str, Any]) -> dict[str, Any]:
     return {
         "id": str(document["_id"]),

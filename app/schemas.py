@@ -24,6 +24,33 @@ class LoginResponse(BaseModel):
     user: UserResponse
 
 
+class UserCreate(BaseModel):
+    username: str = Field(min_length=3, max_length=80)
+    password: str = Field(min_length=4, max_length=128)
+    email: EmailStr
+    role: Role
+    display_name: str = Field(min_length=3, max_length=120)
+
+    @field_validator("username", "display_name")
+    @classmethod
+    def strip_user_text(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("El campo no puede estar vacio")
+        return cleaned
+
+
+class UserUpdate(BaseModel):
+    password: str | None = Field(default=None, min_length=4, max_length=128)
+    email: EmailStr | None = None
+    role: Role | None = None
+    display_name: str | None = Field(default=None, min_length=3, max_length=120)
+
+
+class UserListResponse(UserResponse):
+    id: str
+
+
 class EvaluationCreate(BaseModel):
     title: str = Field(min_length=5, max_length=160)
     description: str = Field(min_length=10, max_length=2000)
