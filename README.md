@@ -1,6 +1,10 @@
 # Plataforma Integral de Evaluaciones Organismos Publicos
 
-Aplicacion academica fullstack construida con FastAPI, MongoDB Atlas y Vanilla JS. Incluye dos roles simulados: Administrador y Encargado de Area.
+Aplicacion web para el proyecto SIAM con la capacidad de registrar dos tipos de usuarios (administradores y encargados) y cada uno de ellos pudiendo hacer diferentes acciones dentro de la pagina. 
+
+Los administradores tienen la capacidad de crear evaluaciones y usuarios, ademas de poder modificar y eliminar a estos mismos. Los encargados pueden revisar sus evaluaciones pendientes, cambiar su porcentaje de avance, subir evidencia y analizarla con IA para saber que tan acorde es a lo solicitado. 
+
+La aplicacion sigue siendo un proof of concept, no obstante ya logra tener una base solida para el proyecto real, la conexion con la db funciona y las tareas cpu demandantes no detienen a la pagina, pues usa funciones asincronas.
 
 ## Requisitos
 
