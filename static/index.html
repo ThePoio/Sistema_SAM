@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evaluaciones Organismos Publicos</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section id="login-view" class="login-layout">
+      <div class="brand-panel">
+        <p class="eyebrow">Organismos publicos · control academico</p>
+        <h1>Evaluaciones que dejan evidencia.</h1>
+        <p class="lead">Coordina avances, responsables y resultados desde un solo espacio de trabajo.</p>
+        <div class="signal"><span></span> Plataforma operativa</div>
+      </div>
+      <form id="login-form" class="panel form-panel">
+        <p class="eyebrow">Acceso seguro</p>
+        <h2>Iniciar sesion</h2>
+        <label>Usuario<input id="username" name="username" required minlength="3" autocomplete="username"></label>
+        <label>Contrasena<input id="password" name="password" type="password" required minlength="4" autocomplete="current-password"></label>
+        <label>Rol<select id="role" name="role"><option value="admin">Administrador</option><option value="encargado">Encargado de Area</option></select></label>
+        <button class="button primary" type="submit">Entrar al panel <span>→</span></button>
+        <p class="hint">Demo: admin / admin123 · encargado / encargado123</p>
+        <p id="login-message" class="message" role="alert"></p>
+      </form>
+    </section>
+
+    <section id="dashboard-view" class="hidden">
+      <header class="topbar">
+        <div><p class="eyebrow">Panel de seguimiento</p><h1 id="dashboard-title">Evaluaciones</h1></div>
+        <div class="session"><span id="session-user"></span><button id="logout-button" class="button ghost">Cerrar sesion</button></div>
+      </header>
+      <p id="dashboard-message" class="message" role="status"></p>
+      <div id="admin-view" class="dashboard-grid hidden">
+        <form id="evaluation-form" class="panel form-panel">
+          <p class="eyebrow">Nueva asignacion</p><h2>Crear evaluacion</h2>
+          <label>Titulo<input name="title" required minlength="5" maxlength="160"></label>
+          <label>Descripcion<textarea name="description" required minlength="10" maxlength="2000"></textarea></label>
+          <div class="two-col"><label>Area<input name="area" required></label><label>Responsable<input name="assigned_to" value="encargado" required></label></div>
+          <label>Fecha limite<input name="due_date" type="datetime-local" required></label>
+          <button class="button primary" type="submit">Crear evaluacion <span>+</span></button>
+        </form>
+        <div class="panel list-panel"><div class="section-heading"><div><p class="eyebrow">Vision global</p><h2>Avances registrados</h2></div><button id="refresh-admin" class="button ghost">Actualizar</button></div><div id="admin-list" class="evaluation-list"></div></div>
+      </div>
+      <div id="encargado-view" class="panel list-panel hidden"><div class="section-heading"><div><p class="eyebrow">Trabajo asignado</p><h2>Mis evaluaciones</h2></div><button id="refresh-encargado" class="button ghost">Actualizar</button></div><div id="encargado-list" class="evaluation-list"></div></div>
+    </section>
+  </main>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
